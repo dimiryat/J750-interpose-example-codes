@@ -4,7 +4,7 @@
 ''argv' is parameters lists, separated by comma
 'Parameter for this function is: LowLimit, HighLimit, Pins, ForceCurrent
 
-Public Function InterposePPMUMeasure(argc As Long, argv() As String) As Long
+Public Function InterposePPMUMeasureSingle(argc As Long, argv() As String) As Long
 
     If (argc <> 4) Then
         GoTo errHandler
@@ -20,7 +20,6 @@ Public Function InterposePPMUMeasure(argc As Long, argv() As String) As Long
     pins = Trim(argv(2))
     ForceCurrent = CDbl(Trim(argv(3)))
     
-    'No need to connect pin to PPMU again due to it's connected already
     'Clamp value should be taking care automatically by spec sheets
     'Set limits for the tests
     With thehdw.PPMU.pins(pins)
@@ -28,8 +27,8 @@ Public Function InterposePPMUMeasure(argc As Long, argv() As String) As Long
         .TestLimitHigh = highLimit
         '.TestLimitValid = pmuBothLimitsValid 'Should not be necessary
         .ForceCurrent(ppmuSmartRange) = ForceCurrent
+        .Connect
     End With
-    thehdw.PPMU.pins(pins).ForceCurrent(ppmuSmartRange) = ForceCurrent
     
     'Decalre a PinListData variable to store measured result
     'Use TestLimit method to datalogging the result
@@ -38,8 +37,31 @@ Public Function InterposePPMUMeasure(argc As Long, argv() As String) As Long
     TheExec.Flow.TestLimit resultVal:=ResultPLD, LowLimit:=LowLimit, highLimit:=highLimit, _
         ForceValue:=ForceCurrent, forceUnit:=unitVolt, scaleValue:=scaleNone
     
+    'Cold switching PPMU relay of the pins
+    thehdw.PPMU.pins(pins).ForceCurrent = 0.000000001
+    thehdw.PPMU.pins(pins).Disconnect
+    
 errHandler:
 
     TheExec.datalog.WriteComment "Error encountered within the InterposePPMUMeasure interpose function"
+
+End Function
+
+'This interpose function is for printing customized comment in datalog stream
+Public Function CustomizedDatalogMessage(argc As Long, argv() As String) As Long
+
+    If (argc <> 1) Then
+        GoTo errHandler
+    End If
+
+    With TheExec.datalog
+        .WriteComment " "
+        .WriteComment argv(0)
+        .WriteComment " "
+    End With
+
+errHandler:
+
+    TheExec.datalog.WriteComment "Error encountered within the CustomizedDatalogMessage interpose function"
 
 End Function
