@@ -46,22 +46,3 @@ errHandler:
     TheExec.datalog.WriteComment "Error encountered within the InterposePPMUMeasure interpose function"
 
 End Function
-
-'This interpose function is for printing customized comment in datalog stream
-Public Function CustomizedDatalogMessage(argc As Long, argv() As String) As Long
-
-    If (argc <> 1) Then
-        GoTo errHandler
-    End If
-
-    With TheExec.datalog
-        .WriteComment " "
-        .WriteComment argv(0)
-        .WriteComment " "
-    End With
-
-errHandler:
-
-    TheExec.datalog.WriteComment "Error encountered within the CustomizedDatalogMessage interpose function"
-
-End Function
