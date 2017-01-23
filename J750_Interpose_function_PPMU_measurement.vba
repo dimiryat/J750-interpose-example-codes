@@ -12,17 +12,17 @@ Public Function InterposePPMUMeasureSingle(argc As Long, argv() As String) As Lo
     
     Dim LowLimit As Double
     Dim highLimit As Double
-    Dim pins As String
+    Dim Pins As String
     Dim ForceCurrent As Double
     
     LowLimit = CDbl(Trim(argv(0)))
     highLimit = CDbl(Trim(argv(1)))
-    pins = Trim(argv(2))
+    Pins = Trim(argv(2))
     ForceCurrent = CDbl(Trim(argv(3)))
     
     'Clamp value should be taking care automatically by spec sheets
     'Set limits for the tests
-    With thehdw.PPMU.pins(pins)
+    With thehdw.PPMU.Pins(Pins)
         .TestLimitLow = LowLimit
         .TestLimitHigh = highLimit
         '.TestLimitValid = pmuBothLimitsValid 'Should not be necessary
@@ -33,13 +33,14 @@ Public Function InterposePPMUMeasureSingle(argc As Long, argv() As String) As Lo
     'Decalre a PinListData variable to store measured result
     'Use TestLimit method to datalogging the result
     Dim ResultPLD As New PinListData
-    thehdw.PPMU.pins(pins).MeasureVoltages ResultPLD
+    ResultPLD.ResultType = tlResultTypeParametricValue 'Must assign per manual description
+    thehdw.PPMU.Pins(Pins).MeasureVoltages ResultPLD
     TheExec.Flow.TestLimit resultVal:=ResultPLD, LowLimit:=LowLimit, highLimit:=highLimit, _
         ForceValue:=ForceCurrent, forceUnit:=unitVolt, scaleValue:=scaleNone
     
     'Cold switching PPMU relay of the pins
-    thehdw.PPMU.pins(pins).ForceCurrent = 0.000000001
-    thehdw.PPMU.pins(pins).Disconnect
+    thehdw.PPMU.Pins(Pins).ForceCurrent = 0.000000001
+    thehdw.PPMU.Pins(Pins).Disconnect
     
 errHandler:
 
